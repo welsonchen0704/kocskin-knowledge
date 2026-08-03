@@ -1,6 +1,6 @@
 ---
 name: kocskin-product-lookup
-description: 查詢 KOCSKIN 克麗詩黛商品資料庫 V2（Notion），回答商品成分、售價、系列、定位、適用膚質、主打賣點等資訊。當使用者提到 KOCSKIN 任一商品名稱、系列（3D全能、極光美白、玫瑰抗老、敏肌修護、基礎清潔等）、或問「哪些商品適合 X 膚質」「XX 多少錢」「XX 的主要成分」時就要觸發。撰寫 KOCSKIN 文案、客服應答、廣告素材前也要先用這個 skill 查商品真實資料，避免憑空捏造。不要生成文案（交給 marketing:draft-content），只負責「查資料」。
+description: 查詢 KOCSKIN 克麗詩黛商品資料庫 V2（Notion），回答商品成分、售價、系列、定位、適用膚質、主打賣點等資訊。當使用者提到 KOCSKIN 任一商品名稱、系列（3D全能、極光美白、玫瑰抗老、敏肌修護、基礎清潔等）、或問「哪些商品適合 X 膚質」「XX 多少錢」「XX 的主要成分」時就要觸發。撰寫 KOCSKIN 文案、客服應答、廣告素材前也要先用這個 skill 查商品真實資料，避免憑空捏造。不要生成文案（貼文交給 kocskin-post-writer／kocskin-threads-writer），只負責「查資料」。
 ---
 
 # KOCSKIN 商品資料庫查詢（v1.3，2026-07-25 本機／雲端合併版）
@@ -58,7 +58,7 @@ SELECT "SKU狀態", COUNT(*) FROM "collection://16d640a9-9f0b-441f-a670-821c6b41
 
 ### 3. 不生成文案
 
-查完資料就報告資料。若使用者需要文案，提示他用 `marketing:draft-content` 或 `marketing:content-creation`，並把查到的商品資料當作素材。
+查完資料就報告資料。若使用者需要文案：FB/IG 用 `kocskin-post-writer`、Threads 用 `kocskin-threads-writer`（LP／廣告素材另行處理），並把查到的商品資料當作素材。
 
 為什麼：職責單一才容易穩定。把「事實查詢」和「創意生成」分開，避免資料錯了卻包在漂亮文案裡難以察覺。
 
@@ -143,7 +143,7 @@ notion-fetch(id: "<page_id>")
 ### Step 6：主動提醒
 
 查完後視情況補一句：
-- 若使用者接下來可能要寫文案 → 提示「要產文案的話可以接著用 `marketing:draft-content`」
+- 若使用者接下來可能要寫文案 → 提示「要產文案的話可以接著用 `kocskin-post-writer`（FB/IG）或 `kocskin-threads-writer`（Threads）」
 - 若合規備注有內容 → 把它拉到顯眼處，這對法規敏感的美妝/保健品很重要
 
 ## 資料庫欄位速查
@@ -152,7 +152,7 @@ notion-fetch(id: "<page_id>")
 
 | 欄位 | 類型 | 主要值 |
 | --- | --- | --- |
-| `SKU狀態` | select | 在售 / 停售 / 開發中 |
+| `SKU狀態` | select | 在售 / 停售 / 暫停販售（2026-08-03 新增，區分暫時停賣） / 開發中 |
 | `商品定位角色` | select | 引流商品 / 主力商品 / 高單價商品 / 回購商品 |
 | `產品系列` | select（功能分類） | 保濕 / 美白淡斑 / 抗老 / 清潔 / 防曬 / 面膜 / 保健食品 / 髮體護理 / 美妝配件 / 香氛／生活 / 精華（2026-07-11 新增）。「極光系列」選項已退役——極光三品已歸「美白淡斑」 |
 | `系列分類` | select（品牌線） | 3D全能系列 / 極光美白系列 / 玫瑰抗老系列 / 敏肌修護系列 / 基礎清潔系列 / 沐浴洗髮系列 / 彩妝系列 / KOC保健食品 / 贈品／加價購 / 夜間儀式系列 |
@@ -169,7 +169,7 @@ notion-fetch(id: "<page_id>")
 - ❌ 不要呼叫 `mcp__notion__API-query-data-source` 或 `API-retrieve-a-data-source`（壞掉，見〈已知限制〉）
 - ❌ 不要憑記憶回答商品資料（永遠以 Notion 即時資料為準）
 - ❌ 不要寫入 Notion（本 skill 是唯讀查詢工具）
-- ❌ 不要生成文案、slogan、廣告素材（交給 marketing 系列 skill）
+- ❌ 不要生成文案、slogan、廣告素材（貼文交給 kocskin-post-writer／kocskin-threads-writer）
 - ❌ 不要在輸出中提及停售商品，除非使用者明確要求
 - ❌ 不要使用簡體字（Welson 偏好繁體中文）
 - ❌ 保健食品資料回傳時不要腦補「治療/預防疾病」類效能描述，這違反台灣法規

@@ -207,7 +207,7 @@ WHERE "發文平台" IN ('Facebook','Instagram') ORDER BY "date:發文日期:sta
 
 **不觸發**：
 - **Threads／脆／@koc_skin → `kocskin-threads-writer`**
-- LP 文案、廣告素材、Email、新聞稿 → `marketing:draft-content`
+- LP 文案、廣告素材、Email、新聞稿 → 另行處理（直接請 Claude 撰寫並過 `kocskin-compliance-check`）
 - Welson 個人 FB、露營瘋（瘋大叔）帳號 → 各自風格不同
 - 純文案審查無生成需求 → `kocskin-compliance-check` 直接跑
 

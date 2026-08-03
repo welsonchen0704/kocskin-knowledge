@@ -42,7 +42,7 @@ description: 為 KOCSKIN 品牌 Threads 帳號 @koc_skin 撰寫貼文，內建 K
    ↓
 5. 依審查結果修正 → 修正版再審一次
    ↓
-6. Welson 定稿 → 寫入 Notion（文案狀態＝核准）→ 讀回比對
+6. Welson 定稿 → 寫入 Notion（文案狀態＝待審）→ 讀回比對
 ```
 
 ### Step 1：查 V2 合規卡
@@ -84,13 +84,13 @@ description: 為 KOCSKIN 品牌 Threads 帳號 @koc_skin 撰寫貼文，內建 K
 排程貼文是單向管道，AI 不得跳關：
 
 ```
-AI 寫文＋獨立審查 → 寫入 Notion（文案狀態＝核准、啟用自動發文＝__NO__）
-  → 【Welson 在 Notion 勾「啟用自動發文」】
+AI 寫文＋獨立審查 → 寫入 Notion（文案狀態＝待審、啟用自動發文＝__NO__）
+  → 【Welson 在 Notion 按「核准」＋勾「啟用自動發文」】
   → 自動發文引擎掃描（trig_01DgE6EUokjbzYxWMjeREBnD，每 5 小時第 36 分）
   → 引擎寫入 Buffer → 自動發佈
 ```
 
-- Threads **進自動發文引擎，但需 Welson 核准後才排**（2026-07-25 裁定）。寫入時 `啟用自動發文` 一律留 `__NO__`，由 Welson 手動開。
+- Threads **進自動發文引擎，但需 Welson 核准後才排**。2026-08-03 裁定：**與 FB/IG 統一**——AI 寫入 `文案狀態＝待審`、`啟用自動發文＝__NO__`，「核准」與「啟用」一律由 Welson 在 Notion 完成（7/25「定稿即核准」做法廢止）。
 - 對話裡的「OK／可以發」＝同意文案內容，**不等於**授權排程。
 - **排程貼文不得由 AI 直接呼叫 Buffer。** 唯一例外是下面的〈快線〉。
 

@@ -1,6 +1,6 @@
 ---
 name: kocskin-compliance-check
-description: 審查 KOCSKIN 克麗詩黛任何對外文案是否違反台灣化粧品 / 保健食品廣告法規，以及 KOCSKIN 品牌紅線（停售商品、人名、簡體字、PDRN 線誤標等）。當使用者要審查 / 檢查 / 過稿 / 上架 / 發布 FB 貼文、IG 貼文、LP 文案、廣告素材、LINE 訊息、Email、新聞稿、商品詳情頁、客服回覆話術，或丟一段文案問「這樣寫可以嗎 / 有沒有問題 / 有沒有違法」時就要觸發。也要在 marketing:draft-content 產出後、在 kocskin-post-writer 產出後自動觸發當最後一道守門。這個 skill 是 KOCSKIN 的品牌保命符，產文案前後都要跑。
+description: 審查 KOCSKIN 克麗詩黛任何對外文案是否違反台灣化粧品 / 保健食品廣告法規，以及 KOCSKIN 品牌紅線（停售商品、人名、簡體字、PDRN 線誤標等）。當使用者要審查 / 檢查 / 過稿 / 上架 / 發布 FB 貼文、IG 貼文、LP 文案、廣告素材、LINE 訊息、Email、新聞稿、商品詳情頁、客服回覆話術，或丟一段文案問「這樣寫可以嗎 / 有沒有問題 / 有沒有違法」時就要觸發。也要在 kocskin-post-writer、kocskin-threads-writer 產出後自動觸發當最後一道守門。這個 skill 是 KOCSKIN 的品牌保命符，產文案前後都要跑。
 ---
 
 # KOCSKIN 合規審查
@@ -98,12 +98,12 @@ KOCSKIN 任何對外文案在發布前的**最後一道守門**。目的：在�
 
 1. 使用者貼一段文案問「這樣寫 ok 嗎」「有沒有問題」「會違法嗎」
 2. 使用者說「要上稿了」「要發布了」「要投廣告了」—— 主動提議跑一次合規審查
-3. **其他 skill 產出文案後**（`marketing:draft-content`、`marketing:content-creation`、`kocskin-post-writer`、`kocskin-threads-writer`）應該自動接上 compliance-check 當最後一道
+3. **其他 skill 產出文案後**（`kocskin-post-writer`、`kocskin-threads-writer`）應該自動接上 compliance-check 當最後一道
 4. 使用者想檢視既有上架文案有沒有歷史違規（例如舊 LP 定期審）
 
 ## 不要做的事
 
-- ❌ 不要自己產創意文案（這是 marketing 系列 skill 的工作；本 skill 只審查不創作）
+- ❌ 不要自己產創意文案（這是 kocskin-post-writer／kocskin-threads-writer 的工作；本 skill 只審查不創作）
 - ❌ 不要「放行」有 Critical 問題的文案，即使使用者說「這樣就好」也要堅持攔下（可以用不同替代方案給他選，但不要假裝它合規）
 - ❌ 不要用簡體字回應
 - ❌ 不要憑一般知識判斷，優先以 [references/compliance-rules.md](references/compliance-rules.md) 的台灣法規為準（美國 / 中國 / 香港標準不適用）
