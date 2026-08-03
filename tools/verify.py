@@ -163,6 +163,7 @@ def check_stopsale_single_source(files, roots):
         "kocskin-product-lookup/references/query-patterns.md",
         "kocskin-compliance-check/references/replacements.md",  # 替代表的「（刪除整句）」列＝禁令記載
         "AGENTS.md",
+        "docs/CLAUDE_kocskin_ai_studio_v2.md",  # 歷史 spec：「已知停售（提示用）」＝禁令記載（2026-08-03 入庫）
     ]
     tech_exception_names = {"氣墊粉餅補充蕊", "益生守護者 7 日體驗包", "益生守護者7日體驗包"}
     hits = []
