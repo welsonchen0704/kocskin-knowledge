@@ -1,5 +1,5 @@
 # 04 維護協議：未來的弱模型怎麼安全地更新本包
-版本：2026-07-03
+版本：2026-09-27（第 4 節依 lessons L-011 升級三條：合規正本位置、入庫義務、打包義務；其餘未動。前版 2026-07-03）
 
 ## 1. 權限分級（動之前先對照）
 
@@ -45,7 +45,13 @@
 （檔名附日期）。
 
 ## 4. 同步義務（單一來源的維護面）
-- 合規規則：源 = ref/compliance-rules.md → 改後同步 kocskin-compliance-check skill。
+- 合規規則：源 = skills/kocskin-compliance-check/references/（Welson 2026-08-08 裁定 skill 版為唯一正本）；
+  charter/ref/compliance-rules.md 只是指向它的 symlink，不另行維護。改規則直接改 skill 正本，
+  SKILL.md〈美白宣稱規則〉與 references/compliance-rules.md 美白列須同輪改齊。
+- 入庫義務（L-011）：改 skill 或憲章的當個 session 內必 `git commit` ＋ `git push origin main`；
+  本機 `git status` 不得留過夜的 modified 或 untracked 規則檔。GitHub main 落後本機＝正本失效。
+- 打包義務（L-011）：打包上傳 claude.ai／ChatGPT 前先確認 `git status` 乾淨且
+  `git log origin/main..HEAD` 為空；zip 一律從 main 打，不從工作樹或舊拷貝打。
 - 品牌貼文規格：源 = ref/brand-and-content.md → 改後同步 kocskin-post-writer skill。
 - claude.ai userPreferences 與 Claude Code 專案的 CLAUDE.md 應為同一版；
   改任一份時提醒 Welson 更新另一份（AI 無法自行改 userPreferences）。
