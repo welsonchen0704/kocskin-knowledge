@@ -1,36 +1,31 @@
 ---
 name: kocskin-product-lookup
-description: 查詢 KOCSKIN 克麗詩黛商品資料庫 V2（Notion），回答商品成分、售價、系列、定位、適用膚質、主打賣點等資訊。當使用者提到 KOCSKIN 任一商品名稱、系列（3D全能、極光美白、玫瑰抗老、敏肌修護、基礎清潔等）、或問「哪些商品適合 X 膚質」「XX 多少錢」「XX 的主要成分」時就要觸發。撰寫 KOCSKIN 文案、客服應答、廣告素材前也要先用這個 skill 查商品真實資料，避免憑空捏造。不要生成文案（貼文交給 kocskin-post-writer／kocskin-threads-writer），只負責「查資料」。
+description: "查詢 KOCSKIN 克麗詩黛商品資料庫 V2（Notion），回答商品成分、售價、系列、定位、適用膚質、主打賣點等資訊。當使用者提到 KOCSKIN 任一商品名稱、系列（3D全能、極光美白、玫瑰抗老、敏肌修護、基礎清潔等）、或問「哪些商品適合 X 膚質」「XX 多少錢」「XX 的主要成分」時就要觸發。撰寫 KOCSKIN 文案、客服應答、廣告素材前也要先用這個 skill 查商品真實資料，避免憑空捏造。不要生成文案（貼文交給 kocskin-post-writer／kocskin-threads-writer），只負責「查資料」。"
 ---
 
-# KOCSKIN 商品資料庫查詢（v1.3，2026-07-25 本機／雲端合併版）
+# KOCSKIN 商品資料庫查詢（v1.5，2026-09-15；前版 v1.4 2026-09-14）
 
 這個 skill 封裝 KOCSKIN 克麗詩黛商品資料庫 V2 的查詢邏輯，讓使用者不用手動開 Notion 就能取得精準、結構化的商品資料。**主路徑是 SQL 查詢**（`notion-query-data-sources`），search + fetch 為語意模糊時的兜底路徑。
 
 ## 核心資訊
 
 - **Notion Data Source ID**：`16d640a9-9f0b-441f-a670-821c6b4189ac`
-- **Collection URL**（給 search 用）：`collection://16d640a9-9f0b-441f-a670-821c6b4189ac`
+- **Collection URL**（給 search 與 SQL 表名用）：`collection://16d640a9-9f0b-441f-a670-821c6b4189ac`
 - **Database URL**：`https://www.notion.so/6e20bfbc8a9c4f1bb89f23f4b32b11ec`
 - **總 SKU 數**：不寫死，一律用 SQL 即時計數（見下方範例）
 - **欄位定義**：見 references/schema.md（2026-07-11 稽核快照，含裁定摘要；以 Notion 即時 schema 為準）
 
-## 已知限制（非常重要，不遵守查詢會失敗）
+## 工具認法（重要）
 
-目前環境中的 Notion MCP 工具分兩組，**只有其中一組可用**：
+Notion 連接器的工具名稱形式為 `mcp__<連接器ID>__notion-xxx`，`mcp__` 後面的連接器 ID **依環境而異**（claude.ai、Cowork、Claude Code 各不同，也可能是 `Notion` 這種可讀名）。**認後綴名即可，不要寫死前綴**。本 skill 用到的工具：
 
-**✅ 可用**（使用這組；`mcp__` 前綴的連接器 ID 依環境而異，認工具後綴名即可）
-- `mcp__a98ccb2c-079e-4bb9-b75c-cdea11c97c70__notion-query-data-sources`（SQL 全表查詢；2026-07-11 實測可用，**多條件篩選、清單、全庫查詢首選**）
-- `mcp__a98ccb2c-079e-4bb9-b75c-cdea11c97c70__notion-search`
-- `mcp__a98ccb2c-079e-4bb9-b75c-cdea11c97c70__notion-fetch`
-- `mcp__a98ccb2c-079e-4bb9-b75c-cdea11c97c70__notion-create-pages`
-- `mcp__a98ccb2c-079e-4bb9-b75c-cdea11c97c70__notion-update-page`
+| 後綴名 | 用途 |
+| --- | --- |
+| `notion-query-data-sources` | SQL 全表查詢；**多條件篩選、清單、全庫查詢首選** |
+| `notion-search` | 語意搜尋（兜底） |
+| `notion-fetch` | 取單頁完整 properties 與內文合規卡 |
 
-**❌ 不要用**（會回 400 `invalid_request_url`）
-- `mcp__notion__API-query-data-source`
-- `mcp__notion__API-retrieve-a-data-source`
-
-為什麼：`mcp__notion__` server 的 route 表沒升級到 Notion 2025-09-03 新版 API，所有 `/v1/data_sources/*` 端點都壞了。這是已知問題，不是你的參數錯。
+若環境裡同時出現舊式 `notion-API-*`（例如 `API-query-data-source`、`API-retrieve-a-data-source`）工具，**不要用**——舊 route 未升級到 Notion 2025-09-03 API，`/v1/data_sources/*` 會回 400 `invalid_request_url`。現行大多數環境已無這組工具，見到才需要避開。
 
 **查詢方式選擇**：多條件／清單／全表需求優先用 `notion-query-data-sources` 下 SQL（表名＝`"collection://16d640a9-9f0b-441f-a670-821c6b4189ac"`；multi-select 是 JSON 陣列字串、checkbox 用 `__YES__`／`__NO__`、`問答覆蓋數` 查不到、`最後審核日期` 用 `date:最後審核日期:start`）。語意模糊查詢再用 `notion-search` + `notion-fetch` 組合，見下方〈執行流程〉。
 
@@ -146,6 +141,10 @@ notion-fetch(id: "<page_id>")
 - 若使用者接下來可能要寫文案 → 提示「要產文案的話可以接著用 `kocskin-post-writer`（FB/IG）或 `kocskin-threads-writer`（Threads）」
 - 若合規備注有內容 → 把它拉到顯眼處，這對法規敏感的美妝/保健品很重要
 
+## ⚠️ references/schema.md 裁定摘要 #1 已被推翻
+
+schema.md〈2026-07-11 Welson 裁定摘要〉第 1 點「傳明酸＝衛福部核可美白成分，KOC022／030／042／050 可訴求美白」**已於 2026-08-08 更正推翻**：美白須該產品本身取得特定用途化粧品許可證（衛部粧製字），含核可成分 ≠ 有宣稱資格；目前這些 SKU 皆無文號，只能「亮白／透亮」。查詢輸出若帶到這幾支的合規備注，一律以 V2 合規卡即時值與 `kocskin-compliance-check`〈美白宣稱規則〉為準，不要引用 schema.md 該點。（schema.md 為 reference 檔，待 Welson 重新上傳時同步修正。）
+
 ## 資料庫欄位速查
 
 完整欄位定義在 [references/schema.md](references/schema.md)。常用欄位：
@@ -166,10 +165,17 @@ notion-fetch(id: "<page_id>")
 
 ## 不要做的事
 
-- ❌ 不要呼叫 `mcp__notion__API-query-data-source` 或 `API-retrieve-a-data-source`（壞掉，見〈已知限制〉）
+- ❌ 不要寫死 `mcp__<ID>__` 連接器前綴，也不要用舊式 `notion-API-*` 工具（見〈工具認法〉）
+- ❌ 不要引用 schema.md 裁定摘要 #1 的「可訴求美白」結論（已被 8/8 更正推翻）
 - ❌ 不要憑記憶回答商品資料（永遠以 Notion 即時資料為準）
 - ❌ 不要寫入 Notion（本 skill 是唯讀查詢工具）
 - ❌ 不要生成文案、slogan、廣告素材（貼文交給 kocskin-post-writer／kocskin-threads-writer）
 - ❌ 不要在輸出中提及停售商品，除非使用者明確要求
 - ❌ 不要使用簡體字（Welson 偏好繁體中文）
 - ❌ 保健食品資料回傳時不要腦補「治療/預防疾病」類效能描述，這違反台灣法規
+
+## 更新紀錄
+
+- 2026-07-25 v1.3：本機／雲端合併版。
+- 2026-09-14 v1.4：「已知限制」改為「工具認法」——移除寫死的 `mcp__a98ccb2c-…__` 連接器前綴，改為認後綴名；舊式 `notion-API-*` 工具降為「見到才避開」的備註。查詢邏輯零改動。
+- 2026-09-15 v1.5：新增「schema.md 裁定摘要 #1 已被推翻」提示（8/8 美白更正：須產品本身有特定用途許可證）。查詢邏輯零改動。
