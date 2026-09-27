@@ -98,16 +98,23 @@ WHERE "SKU"='KOCxxx' AND "狀態"='可用'
 
 **若該 SKU 沒有「實拍」**：明講「此 SKU 目前只有 AI實景／白底，Threads 建議走純文字」，不要硬塞白底圖。
 
-> 目前 45 個在售 SKU 中只有 26 個有實拍，**19 個缺**（含三個高單價利潤引擎：KOC061 玫瑰超導全能安瓶、KOC067 玫瑰超導全能乳液、KOC068 H7抗老緊緻精華加大版）。這是拍攝缺口，不是技術問題。
+> 實拍缺口**不寫死數字**（會過期）。需要時即時查：`SELECT "SKU", COUNT(*) FROM "collection://a924b6bd-c492-4328-93ea-3d036229301f" WHERE "類型"='實拍' AND "狀態"='可用' GROUP BY "SKU"`，再對照 V2 在售清單找缺實拍的 SKU。這是拍攝缺口，不是技術問題。
 
-### 去重
+### 去重（2026-09-14 修訂，對齊 post-writer 8/7 裁定）
 
-素材庫**沒有「最近使用」欄位**。避免重複用同一張的做法：查社群貼文 DB 近期已用的圖片網址，從候選中排除。
+素材庫已有 **`最近使用日期`（date）** 欄位。挑候選時直接在查詢裡排除 30 天內用過的：
 
 ```sql
-SELECT "圖片網址" FROM "collection://04b770fc-b2fa-4185-85e4-b6245777557d"
-WHERE "發文平台"='Threads' ORDER BY "date:發文日期:start" DESC
+SELECT "圖名", "SKU", "類型", "場景", "圖片網址", "date:最近使用日期:start"
+FROM "collection://a924b6bd-c492-4328-93ea-3d036229301f"
+WHERE "SKU"='KOCxxx' AND "狀態"='可用' AND "類型" IN ('實拍','AI實景')
+  AND ("date:最近使用日期:start" IS NULL
+       OR date("date:最近使用日期:start") < date('now','-30 day'))
 ```
+
+- **指派圖片後必須回寫該素材列的 `最近使用日期`**（填該則貼文的發文日期；同一張排多天填最晚那天）。不回寫，下一批必重複。
+- 此欄位為 FB/IG/Threads 三渠道共用，只要每條線都回寫，一次查詢就涵蓋跨渠道。
+- ❌ **舊做法「比對社群貼文 DB 的圖片網址字串」已作廢**——同一張圖在三個渠道的 Cloudinary transform 片段不同（Threads `c_limit,w_1080`、FB `c_fill…`），字串比對抓不到；2026-08-19 `KOC073_ceo02_scene` 三渠道同日撞圖即因此。
 
 ---
 

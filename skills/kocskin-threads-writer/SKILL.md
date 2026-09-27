@@ -1,6 +1,6 @@
 ---
 name: kocskin-threads-writer
-description: 為 KOCSKIN 品牌 Threads 帳號 @koc_skin 撰寫貼文，內建 K編人設、三條硬規則（不放設計圖卡／hashtag≤1／連結放留言）、台灣發文時段、鉤子句型庫與四關合規審查。寫 Threads、脆、@koc_skin 貼文時觸發。FB／IG 請改用 kocskin-post-writer。
+description: "為 KOCSKIN 品牌 Threads 帳號 @koc_skin 撰寫貼文，內建 K編人設、三條硬規則（不放設計圖卡／hashtag≤1／連結放留言）、台灣發文時段、鉤子句型庫與四關合規審查。寫 Threads、脆、@koc_skin 貼文時觸發。FB／IG 請改用 kocskin-post-writer。"
 ---
 
 # KOCSKIN Threads 貼文生成器（@koc_skin）
@@ -51,7 +51,7 @@ description: 為 KOCSKIN 品牌 Threads 帳號 @koc_skin 撰寫貼文，內建 K
 
 合規卡的「❌ 禁用／✅ 可用／📌 已核定決議」**優先於本檔與一切記憶**。V2 查不到 → 明講「需進一步確認」。Notion 連不上 → 明講「未連 V2、無法核對合規卡」，**不產出商品文案**。
 
-> ⚠️ 合規卡會被更新。例如 2026-07-11 Welson 裁定「傳明酸為衛福部核可美白成分，極光線可訴求美白」，推翻了 6/28 的限制；2026-09-27 又改為憲章 R3 例外條款（僅極光三品可訴求美白，「衛福部核可美白成分」一語禁用）。**永遠以當下讀到的卡為準，不要用記憶中的結論。**
+> ⚠️ 合規卡會被更新，且會來回翻轉。例：7/11 曾裁定「傳明酸品項可訴求美白」，8/8 更正推翻（含核可成分不等於有宣稱資格），**9/27 又依憲章 R3 例外條款解鎖極光三品 KOC022／KOC042／KOC030**（可寫美白等通常詞句；仍禁淡斑／黑色素機轉／「衛福部核可成分」表述；其餘 SKU 只能「亮白／透亮」；正本見 kocskin-compliance-check〈美白宣稱規則〉）。**永遠以當下讀到的卡與 compliance-check 為準，不要用記憶中的結論。**
 
 ### Step 2：規劃
 
@@ -114,7 +114,26 @@ Threads 多數貼文純文字。要配圖時走半自動：**系統挑 2–3 張
 
 理由：規則挑得出正確 SKU，挑不出「這張圖看起來像不像真人隨手拍」——而那正是 Threads 圖片唯一的判準。
 
-選圖邏輯、素材庫查詢與 Cloudinary 尺寸切換見 [references/notion-and-images.md](references/notion-and-images.md)。
+選圖邏輯（類型優先序：實拍 > AI實景；白底／設計卡不用）、素材庫欄位與 Cloudinary 尺寸切換見 [references/notion-and-images.md](references/notion-and-images.md)。
+
+> ⚠️ **notion-and-images.md §3 的「去重」小節（比對貼文 DB 圖片網址字串）與「45 個在售 SKU／26 有實拍／19 缺」等寫死數字已作廢**（2026-09-14 修訂，對齊 post-writer 2026-08-07 裁定）。去重一律以下方本節為準。
+
+### 去重（正本，2026-09-14 起）
+
+素材圖庫 `collection://a924b6bd-c492-4328-93ea-3d036229301f` 已有 **`最近使用日期`（date）** 欄位。挑候選時先排除 30 天內用過的：
+
+```sql
+SELECT "圖名", "SKU", "類型", "場景", "圖片網址", "date:最近使用日期:start"
+FROM "collection://a924b6bd-c492-4328-93ea-3d036229301f"
+WHERE "SKU"='KOCxxx' AND "狀態"='可用' AND "類型" IN ('實拍','AI實景')
+  AND ("date:最近使用日期:start" IS NULL
+       OR date("date:最近使用日期:start") < date('now','-30 day'))
+```
+
+- **指派圖片後，必須回寫該素材列的 `最近使用日期`**（填該則貼文的發文日期；同一張排多天時填最晚那天）。不回寫，下一批必重複。
+- **跨渠道共用同一個欄位。** FB/IG 與 Threads 內容線獨立，但素材共用；`最近使用日期` 是三渠道共用的，所以只要每條線都回寫，一次查詢就涵蓋跨渠道。
+- ❌ **不要再用「比對社群貼文 DB 的圖片網址字串」去重**——同一張圖在三個渠道的 Cloudinary transform 片段不同（Threads `c_limit,w_1080`、FB `c_fill…`），字串比對抓不到。2026-08-19 三渠道同時撞圖 `KOC073_ceo02_scene` 就是這樣漏的。
+- **實拍缺口不寫死數字。** 需要時即時查：`SELECT "SKU", COUNT(*) FROM "collection://a924b6bd-…" WHERE "類型"='實拍' AND "狀態"='可用' GROUP BY "SKU"`，再對照 V2 在售清單找缺實拍的 SKU。若該 SKU 沒有實拍，明講「Threads 建議走純文字」，不硬塞白底圖。
 
 **需要照片的貼文，圖沒備妥前 `啟用自動發文` 一律 `__NO__`**，否則會發出空殼貼文。
 
@@ -148,9 +167,18 @@ Threads 多數貼文純文字。要配圖時走半自動：**系統挑 2–3 張
 - ❌ 排程貼文直接呼叫 Buffer（只有快線且 Welson 說「發」才可）
 - ❌ 未經 Welson 定稿就寫入 Notion
 - ❌ 用小燕第一人稱寫 @koc_skin 的貼文（K編不是小燕）
+- ❌ **挑圖不查 `最近使用日期` 就指派，或指派後不回寫該欄位**
+- ❌ **用貼文 DB 圖片網址字串比對去重**（已作廢）
+- ❌ 在文案或報告裡引用寫死的 SKU 數／實拍張數（一律 SQL 即時查）
 
 ## 內部參考檔
 
 - [references/persona-and-hooks.md](references/persona-and-hooks.md) — K編語氣、結構公式、鉤子句型庫
 - [references/threads-rules.md](references/threads-rules.md) — 三條硬規則、時段、配比、禁止事項、審查格式、指標、檢查表
-- [references/notion-and-images.md](references/notion-and-images.md) — Notion 欄位對照、技術坑、選圖邏輯、尺寸切換
+- [references/notion-and-images.md](references/notion-and-images.md) — Notion 欄位對照、技術坑、選圖類型優先序、尺寸切換（§3 去重小節已作廢，以本檔〈去重〉為準）
+
+## 更新紀錄
+
+- 2026-09-27：Step 1 範例補 9/27 R3 例外條款（極光三品解鎖美白）。
+- 2026-09-15：Step 1 範例改為 8/8 美白更正版（原引 7/11 舊裁定，已被推翻）。
+- 2026-09-14：去重改以素材庫 `最近使用日期` 為準（對齊 post-writer 8/7 裁定），作廢 URL 字串比對法；移除寫死的在售／實拍數字，改即時查。
