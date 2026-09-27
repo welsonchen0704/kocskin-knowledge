@@ -57,5 +57,5 @@
 ### L-010｜2026-09-27｜R3 美白禁令新增極光美白系列例外（制度變更）
 情境：Welson 2026-09-27 拍板——極光美白系列 KOC022 極光美白精華／KOC042 極光美白神仙水／KOC030 極光美白乳霜，傳明酸添加比例足以支撐美白宣稱，「美白」訴求即日解鎖；依 2026-09-26 D2 裁定之解鎖條件（PIF 完備＋產品登錄完成＋法規窗口確認）達成。Notion V2 三品合規卡已於 claude.ai 對話同步更新。
 錯誤：非踩坑。但同時修正一處長期分岔——CLAUDE_v2.1.md R3 末句自 07-11 起仍寫「無文號禁美白」，ref/compliance-rules.md 第三關卻已放寬為「含衛福部核可美白成分可訴求美白」，兩處規則不一致達 80 天；且「衛福部核可美白成分」一語本身即暗示官方核准（現行制度已無核准機制），不宜再作為判準依據。
-規則：美白宣稱僅限 KOC022／KOC042／KOC030 三品可用「美白、美白肌膚、亮白、白皙、淨白、嫩白、皙白」等通常詞句；淡斑／淡化斑點／抑制或阻斷黑色素／防止色斑形成等機轉宣稱、「衛福部核准／核可美白成分」表述、KOC030 獲獎／專利／TranEX-1／胜肽 維持禁用；其餘 SKU 照 R3 原規則。KOC050 未在本次裁定範圍，以 V2 合規卡為準。
+規則：美白宣稱僅限 KOC022／KOC042／KOC030 三品可用「美白、美白肌膚、亮白、白皙、淨白、嫩白、皙白」等通常詞句；淡斑／淡化斑點／調節、抑制或阻斷黑色素／防止色斑形成等機轉宣稱、「衛福部核准／核可美白成分」表述、KOC030 獲獎／專利／TranEX-1／胜肽 維持禁用；其餘 SKU 照 R3 原規則。KOC050 未在本次裁定範圍，以 V2 合規卡為準。同日追加裁定：「調節黑色素」原為 compliance-check skill 的淡斑替代語（replacements.md、compliance-rules.md 兩處），屬機轉宣稱，一併改列禁用。
 落點：已寫入 CLAUDE_v2.1.md R3 例外條款（正本）＋ ref/compliance-rules.md 第三關與用語速查同步；skill 內建 references（kocskin-compliance-check/compliance-rules.md 第 32 行、kocskin-product-lookup/schema.md 裁定摘要第 1–2 條、kocskin-threads-writer/SKILL.md 第 54 行舉例）已於同日經 Welson 核准同步；KOC050 經 Welson 確認維持以 V2 為準。待辦：六支 skill 重新上傳 claude.ai、claude.ai 個人偏好檔 R3 手動貼入例外條款。
